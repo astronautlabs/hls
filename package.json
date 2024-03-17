@@ -1,0 +1,54 @@
+{
+  "name": "@astronautlabs/hls",
+  "version": "1.0.0",
+  "description": "Tools for parsing, analyzing and generating HTTP Live Streaming manifests.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "private": false,
+  "scripts": {
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "tsc -b",
+    "build:esm": "tsc -b tsconfig.esm.json",
+    "prepublishOnly": "npm run build && npm test",
+    "test": "jest --runInBand"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/astronautlabs/hls.git"
+  },
+  "keywords": [
+    "hls",
+    "m3u8",
+    "manifest",
+    "playlist",
+    "live",
+    "video",
+    "streaming",
+    "stream",
+    "abr",
+    "adaptive bit rate"
+  ],
+  "author": "Astronaut Labs, LLC",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/astronautlabs/hls/issues"
+  },
+  "homepage": "https://github.com/astronautlabs/hls#readme",
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "@types/chai": "^4.2.22",
+    "@types/node": "^20.11.28",
+    "chai": "^4.4.1",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.2",
+    "undici-types": "^6.9.0"
+  },
+  "dependencies": {
+    "@astronautlabs/m3u8": "^1.0.0"
+  }
+}
