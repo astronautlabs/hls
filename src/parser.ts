@@ -55,9 +55,9 @@ export class Parser {
     parseExactlyOneGlobalTag(lines: string[], name: string): Tag {
         let tags = lines.filter(x => x.startsWith(`#${name}:`));
         if (tags.length === 0)
-            throw new Error(`Invalid playlist: Missing ${name}`);
+            throw new Error(`Invalid playlist: Missing #${name}`);
         if (tags.length > 1)
-            throw new Error(`Invalid playlist: Multiple ${name} present`);
+            throw new Error(`Invalid playlist: Multiple #${name} present`);
 
         return this.parseTag(tags[0]);
     }
@@ -174,9 +174,9 @@ export class Parser {
         let tags = element.tags.filter(x => x.name === tagName);
 
         if (tags.length > 1)
-            throw new Error(`${elementType} '${element.uri}' has multiple ${tagName}`);
+            throw new Error(`${elementType} '${element.uri}' has multiple #${tagName}`);
         if (tags.length === 0)
-            throw new Error(`${elementType} '${element.uri}' is missing ${tagName}`);
+            throw new Error(`${elementType} '${element.uri}' is missing #${tagName}`);
 
         return tags[0];
     }
@@ -198,6 +198,9 @@ export class Parser {
     parse(content: string): Playlist {
         const lines = content.split(/\r?\n/).map(x => x.trim()).filter(x => x !== '');
         const playlistCommon = this.parsePlaylistCommon(lines);
+
+        if (lines[0] !== '#EXTM3U')
+            throw new Error(`Missing #EXTM3U header tag`);
 
         if (lines.some(line => line.startsWith('#EXT-X-STREAM-INF'))) {
             // This is a master playlist. 
