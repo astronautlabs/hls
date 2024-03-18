@@ -8,9 +8,9 @@ export interface DateRange {
     class?: string;
     startDate: string;
     endDate?: string;
-    duration: number;
+    duration: number | undefined;
     plannedDuration?: number;
     scte35?: SCTE35;
-    attributes: Record<string, string>;
+    clientAttributes: Record<string, string>;
     endOnNext?: boolean;
 }

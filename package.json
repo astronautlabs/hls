@@ -47,8 +47,5 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.4.2",
     "undici-types": "^6.9.0"
-  },
-  "dependencies": {
-    "@astronautlabs/m3u8": "^1.0.0"
   }
 }

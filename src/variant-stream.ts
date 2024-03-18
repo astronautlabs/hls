@@ -1,5 +1,4 @@
 import { Media } from './media';
-import { Resolution } from './resolution';
 
 /**
  * A Variant Stream includes a Media Playlist that specifies media encoded at a particular bit rate, in a particular 
@@ -8,11 +7,10 @@ import { Resolution } from './resolution';
  * @see Overview (https://datatracker.ietf.org/doc/html/rfc8216#section-2)
  */
 export interface VariantStream {
-    media?: Omit<Media, 'uri'>;
     bandwidth: number;
     averageBandwidth?: number;
-    codecs: string[];
-    resolution?: Resolution;
+    codecs: string[] | undefined;
+    resolution?: string;
     frameRate?: number;
     hdcpLevel?: 'NONE' | 'TYPE-0';
     audioGroup?: string;

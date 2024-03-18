@@ -5,5 +5,5 @@ import { ByteRange } from "./byte-range";
  */
 export interface MediaInitialization {
     uri: string;
-    byteRange: ByteRange;
+    byteRange?: ByteRange;
 }

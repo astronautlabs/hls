@@ -29,5 +29,5 @@ export interface AES128EncryptionKey {
      * binary representation into a 16-octet (128-bit) buffer and padding
      * (on the left) with zeros.
      */
-    iv?: Uint8Array;
+    iv?: string;
 }

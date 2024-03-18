@@ -11,10 +11,10 @@ import { VariantStream } from "./variant-stream";
  */
 export type Playlist = MasterPlaylist | MediaPlaylist;
 
-interface PlaylistCommon {
+export interface PlaylistCommon {
     version: number;
     independentSegments: boolean;
-    start: Start;
+    start: Start | undefined;
 }
 
 /**
@@ -43,7 +43,7 @@ export interface MediaPlaylist extends PlaylistCommon {
     mediaSequence: number;
     discontinuitySequence: number;
     ended: boolean;
-    type: 'EVENT' | 'VOD';
+    type: 'EVENT' | 'VOD' | undefined;
     iframesOnly: boolean;
     segments: MediaSegment[];
 }
