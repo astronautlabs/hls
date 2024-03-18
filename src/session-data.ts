@@ -4,6 +4,6 @@
 export interface SessionData {
     id: string;
     value?: string;
-    uri: string;
+    uri?: string;
     language?: string;
 }

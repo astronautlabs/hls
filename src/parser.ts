@@ -1,11 +1,12 @@
 import { ByteRange } from './byte-range';
 import { DateRange } from './date-range';
 import { AES128EncryptionKey, EncryptionKey, NoEncryptionKey } from './encryption-key';
+import { IFrameStream } from './iframe-stream';
 import { AlternativeMedia, ClosedCaptions, Media, MediaCommon, Subtitles } from './media';
 import { MediaInitialization } from './media-initialization';
 import { MediaSegment } from './media-segment';
 import { MasterPlaylist, MediaPlaylist, Playlist, PlaylistCommon } from './playlist';
-import { SCTE35 } from './scte35';
+import { SessionData } from './session-data';
 import { Start } from './start';
 import { as } from './utils';
 import { VariantStream } from './variant-stream';
@@ -79,26 +80,27 @@ export class Parser {
                 throw new Error(`Attribute is missing equals sign`);
             let tag = content.slice(i, equalsChar);
 
-            i += tag.length + 1;
+            i = equalsChar + 1;
 
             if (content[i] === '"') {
                 let closingQuote = content.indexOf('"', i + 1);
                 let value = content.slice(i + 1, closingQuote);
-
-                if (closingQuote === -1) {
+                if (closingQuote === -1)
                     throw new Error(`Unterminated quote`);
-                }
 
-                i = closingQuote;
                 record[tag] = value;
+                i = closingQuote + 1;
+
+                if (i < content.length && content[i] !== ',')
+                    throw new Error(`Expected comma`);
             } else {
-                let endOfValue = content.indexOf(',');
+                let endOfValue = content.indexOf(',', i + 1);
                 if (endOfValue < 0)
                     endOfValue = content.length;
 
-                i = endOfValue;
                 let value = content.slice(i, endOfValue);
                 record[tag] = value;
+                i = endOfValue;
             }
         }
 
@@ -158,7 +160,7 @@ export class Parser {
     readonly COMMON_PLAYLIST_GLOBAL_TAGS = [
         'EXTM3U', 'EXT-X-VERSION', 'EXT-X-INDEPENDENT-SEGMENTS', 'EXT-X-START'
     ];
-    readonly MASTER_PLAYLIST_GLOBAL_TAGS = ['EXT-X-MEDIA'];
+    readonly MASTER_PLAYLIST_GLOBAL_TAGS = ['EXT-X-MEDIA', 'EXT-X-I-FRAME-STREAM-INF'];
     readonly MEDIA_PLAYLIST_GLOBAL_TAGS = [
         'EXT-X-TARGETDURATION', 'EXT-X-MEDIA-SEQUENCE', 'EXT-X-DISCONTINUITY-SEQUENCE', 'EXT-X-ENDLIST',
         'EXT-X-I-FRAMES-ONLY', 'EXT-X-PLAYLIST-TYPE'
@@ -255,6 +257,37 @@ export class Parser {
                 }
             }
 
+            // I-Frame Only Streams
+
+            let iframeStreamTags = this.parseMultipleGlobalTags(lines, 'EXT-X-I-FRAME-STREAM-INF');
+            let iframeStreams: IFrameStream[] = [];
+            for (let streamTag of iframeStreamTags) {
+                let attrs = this.parseAttributeList(streamTag.value);
+                iframeStreams.push({
+                    bandwidth: Number(this.requireTagAttribute(streamTag, attrs, 'BANDWIDTH')),
+                    averageBandwidth: this.parseOptionalNumber(attrs['AVERAGE-BANDWIDTH']),
+                    codecs: attrs['CODECS'] ? attrs['CODECS'].split(',') : undefined,
+                    resolution: attrs['RESOLUTION'],
+                    hdcpLevel: <'NONE' | 'TYPE-0' | undefined>attrs['HDCP-LEVEL'],
+                    videoGroup: attrs['VIDEO'],
+                    uri: this.requireTagAttribute(streamTag, attrs, 'URI')
+                });
+            }
+
+            // Session data
+            let sessionDataTags = this.parseMultipleGlobalTags(lines, 'EXT-X-SESSION-DATA');
+            let sessionData: SessionData[] = [];
+            for (let sessionDataTag of sessionDataTags) {
+                let attrs = this.parseAttributeList(sessionDataTag.value);
+                sessionData.push({
+                    id: this.requireTagAttribute(sessionDataTag, attrs, 'DATA-ID'),
+                    value: attrs['VALUE'],
+                    uri: attrs['URI'],
+                    language: attrs['LANGUAGE']
+                })
+            }
+
+            // Variant Streams
             let elements = this.parseElements(lines, [...this.COMMON_PLAYLIST_GLOBAL_TAGS, ...this.MASTER_PLAYLIST_GLOBAL_TAGS]);
             let streams: VariantStream[] = [];
 
@@ -284,12 +317,14 @@ export class Parser {
                 kind: 'master',
                 ...playlistCommon,
                 media,
+                sessionData,
+                iframeStreams,
                 streams
             });
         } else {
             // This is a media playlist.
 
-            let targetDuration = Number(this.parseExactlyOneGlobalTag(lines, 'EXT-X-TARGETDURATION'));
+            let targetDuration = Number(this.parseExactlyOneGlobalTag(lines, 'EXT-X-TARGETDURATION').value);
             let mediaSequence = Number(this.parseOptionalGlobalTag(lines, 'EXT-X-MEDIA-SEQUENCE')?.value ?? '0');
             let discontinuitySequence = Number(this.parseOptionalGlobalTag(lines, 'EXT-X-DISCONTINUITY-SEQUENCE')?.value ?? '0')
             let ended = this.optionalGlobalTagPresent(lines, 'EXT-X-ENDLIST');
@@ -307,6 +342,8 @@ export class Parser {
                     let comma = extinf.value.indexOf(',');
                     duration = Number(extinf.value.slice(0, comma));
                     title = extinf.value.slice(comma + 1);
+                    if (title === '')
+                        title = undefined;
                 } else {
                     duration = Number(extinf.value);
                 }

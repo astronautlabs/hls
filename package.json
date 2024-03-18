@@ -1,6 +1,6 @@
 {
   "name": "@astronautlabs/hls",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Tools for parsing, analyzing and generating HTTP Live Streaming manifests.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -1,6 +1,7 @@
 export * from './byte-range';
 export * from './date-range';
 export * from './encryption-key';
+export * from './iframe-stream';
 export * from './media';
 export * from './media-initialization';
 export * from './media-segment';

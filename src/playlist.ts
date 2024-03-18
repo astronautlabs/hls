@@ -1,4 +1,5 @@
 import { AES128EncryptionKey } from "./encryption-key";
+import { IFrameStream } from "./iframe-stream";
 import { Media } from "./media";
 import { MediaSegment } from "./media-segment";
 import { SessionData } from "./session-data";
@@ -26,7 +27,7 @@ export interface MasterPlaylist extends PlaylistCommon {
     kind: 'master';
     media: Media[];
     streams: VariantStream[];
-    iframeStreamUri?: string;
+    iframeStreams?: IFrameStream[];
     sessionData?: SessionData[];
     sessionKeys?: AES128EncryptionKey[];
 }
@@ -46,4 +47,9 @@ export interface MediaPlaylist extends PlaylistCommon {
     type: 'EVENT' | 'VOD' | undefined;
     iframesOnly: boolean;
     segments: MediaSegment[];
+}
+
+export class Playlists {
+    static isMedia(playlist: Playlist): playlist is MediaPlaylist { return playlist.kind === 'media'; }
+    static isMaster(playlist: Playlist): playlist is MasterPlaylist { return playlist.kind === 'master'; }
 }

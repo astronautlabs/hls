@@ -19,3 +19,5 @@ export interface VariantStream {
     closedCaptionsGroup?: string;
     uri: string;
 }
+
+
